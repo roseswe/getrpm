@@ -1,7 +1,7 @@
 # SUSE SCC Package Search Tools
 
->[!HINT] About
-A collection of lightweight Go utilities designed to interface with the **SUSE Customer Center (SCC) API**. These tools allow you to search for RPM packages and retrieve product information directly from SUSE's repositories without needing a registered or active system.
+>[!NOTE]
+>A collection of lightweight Go utilities designed to interface with the **SUSE Customer Center (SCC) API**. These tools allow you to search for RPM packages and retrieve product information directly from SUSE's repositories without needing a registered or active system.
 
 ## 🛠 The Tools
 
