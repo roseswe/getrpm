@@ -111,5 +111,5 @@ These tools use the public-facing SUSE SCC API. While highly useful, detailed do
 
 <!--
 vim:set fileencoding=utf8 fileformat=unix filetype=gfm tabstop=2 expandtab:
-@(#)  $Id: README.md,v 1.2 2026/04/06 09:51:47 ralph Exp $
+@(#)  $Id: README.md,v 1.3 2026/04/06 11:12:47 ralph Exp $
 -->

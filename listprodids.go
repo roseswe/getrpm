@@ -85,7 +85,7 @@ func main() {
 
 	if lBooVersion {
 		// go build -ldflags "-X main.compileDate=$(date +%d.%m.%Y)" -o listprodids listprodids.go
-		fmt.Printf("\nListProdIDs version [%s,%s]: @(#) $Id: listprodids.go,v 1.15 2026/04/06 09:51:48 ralph Exp $\n", runtime.GOOS, runtime.Version())
+		fmt.Printf("\nListProdIDs version [%s,%s]: @(#) $Id: listprodids.go,v 1.16 2026/04/06 11:12:47 ralph Exp $\n", runtime.GOOS, runtime.Version())
 		os.Exit(0)
 	}
 
