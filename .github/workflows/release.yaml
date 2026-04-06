@@ -5,14 +5,14 @@
 # It triggers on pushes to version tags (e.g., v1.26) and creates ZIP packages for each platform, which are then uploaded as release assets.
 # The workflow includes support for multiple platforms (Linux, Windows, macOS) and architectures (amd64, i386, arm64, ppc64le, s390x).
 # The binaries are built with Go 1.25, and UPX is used to compress the executables for size reduction.
-# The resulting ZIP files are named according to the platform and architecture (e.g., scc-tools-linux-amd64.zip) and uploaded to the GitHub release associated with the tag.
+# The resulting ZIP files are named according to the platform and architecture (e.g., getrpm-linux-amd64.zip) and uploaded to the GitHub release associated with the tag.
 
-name: Release Static Binaries
+name: getrpm - Release Static Binaries
 
 on:
   push:
     tags:
-      - 'v*' # Trigger on version tags (e.g., v1.26)
+      - 'v*' # Trigger on version tags (e.g., v1.26, v1.27.2 [was the first successful release], v1.28.0, etc.)
 
 # THIS IS THE KEY FIX: Grant write permissions for releases
 permissions:
@@ -26,7 +26,7 @@ jobs:
       matrix:
         include:
           - { goos: linux, goarch: amd64, binary_extension: "" }
-          - { goos: linux, goarch: "386",  binary_extension: "" }# i386 Platform
+          - { goos: linux, goarch: "386",  binary_extension: "" } # i386 Platform
           - { goos: linux, goarch: arm64, binary_extension: "" }  # Raspberry Pi 3+
           - { goos: linux, goarch: ppc64le, binary_extension: "" }
           - { goos: linux, goarch: s390x, binary_extension: "" }
@@ -47,6 +47,8 @@ jobs:
           cache: false
 
       - name: Install UPX
+        # install UPX for compressing binaries, with error handling to continue even if installation fails (e.g., due to unsupported platforms)
+        # WARNING: Old version 4.x - may not support all platforms, and may have not the best compression
         run: sudo apt-get update && sudo apt-get install -y upx
 
       - name: Build Static Binaries
@@ -75,11 +77,11 @@ jobs:
       - name: Create ZIP Package
         run: |
           cd dist
-          zip ../scc-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip *
+          zip ../getrpm-${{ matrix.goos }}-${{ matrix.goarch }}.zip *
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: scc-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          files: getrpm-${{ matrix.goos }}-${{ matrix.goarch }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
