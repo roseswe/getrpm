@@ -7,13 +7,16 @@
 # The binaries are built with Go 1.25, and UPX is used to compress the executables for size reduction.
 # The resulting ZIP files are named according to the platform and architecture (e.g., scc-tools-linux-amd64.zip) and uploaded to the GitHub release associated with the tag.
 
-
 name: Release Static Binaries
 
 on:
   push:
     tags:
       - 'v*' # Trigger on version tags (e.g., v1.26)
+
+# THIS IS THE KEY FIX: Grant write permissions for releases
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,16 +25,13 @@ jobs:
     strategy:
       matrix:
         include:
-          # Linux builds (Static)
           - { goos: linux, goarch: amd64, binary_extension: "" }
-          - { goos: linux, goarch: "386",  binary_extension: "" } # i386 Platform
+          - { goos: linux, goarch: "386",  binary_extension: "" }# i386 Platform
           - { goos: linux, goarch: arm64, binary_extension: "" }  # Raspberry Pi 3+
           - { goos: linux, goarch: ppc64le, binary_extension: "" }
           - { goos: linux, goarch: s390x, binary_extension: "" }
-          # Windows builds (Static)
           - { goos: windows, goarch: amd64, binary_extension: ".exe" }
-          - { goos: windows, goarch: "386",  binary_extension: ".exe" } # i386 Platform
-          # macOS builds
+          - { goos: windows, goarch: "386",  binary_extension: ".exe" }
           - { goos: darwin, goarch: amd64, binary_extension: "" }
           - { goos: darwin, goarch: arm64, binary_extension: "" }
 
@@ -42,7 +42,9 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25' # Using Go 1.25 as requested
+          go-version: '1.25'
+          # Disable automatic caching since you don't have a go.sum file yet
+          cache: false
 
       - name: Install UPX
         run: sudo apt-get update && sudo apt-get install -y upx
@@ -51,12 +53,12 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-          CGO_ENABLED: 0 # Ensures the resulting binary is a static executable
+          CGO_ENABLED: 0  # Ensures the resulting binary is a static executable
         run: |
           # Generate current date for the compileDate variable used in source
           COMPILE_DATE=$(date +%d.%m.%Y)
+          mkdir -p dist
 
-          # Build getrpm with requested ldflags
           go build -ldflags "-s -w -X main.compileDate=${COMPILE_DATE}" \
             -o dist/getrpm-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} getrpm.go
 
@@ -65,7 +67,7 @@ jobs:
             -o dist/listprodids-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} listprodids.go
 
       - name: Compress with UPX
-        # UPX packing for size reduction
+      # UPX packing for size reduction, with error handling to continue even if UPX fails (e.g., due to unsupported formats)
         run: |
           upx --best --lzma dist/getrpm-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} || true
           upx --best --lzma dist/listprodids-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} || true
@@ -73,8 +75,7 @@ jobs:
       - name: Create ZIP Package
         run: |
           cd dist
-          zip scc-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip *
-          mv scc-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip ../
+          zip ../scc-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip *
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
