@@ -1,0 +1,7 @@
+getrpm
+listprodids
+.cvsignore
+CVS/Entries
+CVS/Root
+CVS/Repository
+workflow.txt

@@ -1,0 +1,84 @@
+# .github/workflows/release.yaml
+
+# (c) by Ralph Roth, ROSE SWE
+# This GitHub Actions workflow builds and releases static binaries for the getrpm and listprodids tools.
+# It triggers on pushes to version tags (e.g., v1.26) and creates ZIP packages for each platform, which are then uploaded as release assets.
+# The workflow includes support for multiple platforms (Linux, Windows, macOS) and architectures (amd64, i386, arm64, ppc64le, s390x).
+# The binaries are built with Go 1.25, and UPX is used to compress the executables for size reduction.
+# The resulting ZIP files are named according to the platform and architecture (e.g., scc-tools-linux-amd64.zip) and uploaded to the GitHub release associated with the tag.
+
+
+name: Release Static Binaries
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags (e.g., v1.26)
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Linux builds (Static)
+          - { goos: linux, goarch: amd64, binary_extension: "" }
+          - { goos: linux, goarch: "386",  binary_extension: "" } # i386 Platform
+          - { goos: linux, goarch: arm64, binary_extension: "" }  # Raspberry Pi 3+
+          - { goos: linux, goarch: ppc64le, binary_extension: "" }
+          - { goos: linux, goarch: s390x, binary_extension: "" }
+          # Windows builds (Static)
+          - { goos: windows, goarch: amd64, binary_extension: ".exe" }
+          - { goos: windows, goarch: "386",  binary_extension: ".exe" } # i386 Platform
+          # macOS builds
+          - { goos: darwin, goarch: amd64, binary_extension: "" }
+          - { goos: darwin, goarch: arm64, binary_extension: "" }
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25' # Using Go 1.25 as requested
+
+      - name: Install UPX
+        run: sudo apt-get update && sudo apt-get install -y upx
+
+      - name: Build Static Binaries
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0 # Ensures the resulting binary is a static executable
+        run: |
+          # Generate current date for the compileDate variable used in source
+          COMPILE_DATE=$(date +%d.%m.%Y)
+
+          # Build getrpm with requested ldflags
+          go build -ldflags "-s -w -X main.compileDate=${COMPILE_DATE}" \
+            -o dist/getrpm-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} getrpm.go
+
+          # Build listprodids with requested ldflags
+          go build -ldflags "-s -w -X main.compileDate=${COMPILE_DATE}" \
+            -o dist/listprodids-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} listprodids.go
+
+      - name: Compress with UPX
+        # UPX packing for size reduction
+        run: |
+          upx --best --lzma dist/getrpm-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} || true
+          upx --best --lzma dist/listprodids-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} || true
+
+      - name: Create ZIP Package
+        run: |
+          cd dist
+          zip scc-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip *
+          mv scc-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip ../
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: scc-tools-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
