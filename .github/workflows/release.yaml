@@ -12,7 +12,8 @@ name: getrpm - Release Static Binaries
 on:
   push:
     tags:
-      - 'v*' # Trigger on version tags (e.g., v1.26, v1.27.2 [was the first successful release], v1.28.0, etc.)
+      - 'v[0-9]+*' # Trigger on version tags (e.g., v1.26, v1.27.2 [was the first successful release], v1.28.0, etc.)
+      - '[0-9]+.[0-9]+.[0-9]+*'     # Standard versioning tags
 
 # THIS IS THE KEY FIX: Grant write permissions for releases
 permissions:
@@ -22,6 +23,14 @@ jobs:
   build:
     name: Build and Release
     runs-on: ubuntu-latest
+
+    # --- VARIABLE DEFINITIONS ---
+    env:
+      SRC_GETRPM: getrpm.go
+      SRC_LISTPRODIDS: listprodids.go
+      # The target ZIP filename using matrix context
+      ZIP_FILENAME: getrpm-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+
     strategy:
       matrix:
         include:
@@ -61,12 +70,14 @@ jobs:
           COMPILE_DATE=$(date +%d.%m.%Y)
           mkdir -p dist
 
-          go build -ldflags "-s -w -X main.compileDate=${COMPILE_DATE}" \
-            -o dist/getrpm-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} getrpm.go
-
           # Build listprodids with requested ldflags
+          # Build getrpm using source variable
           go build -ldflags "-s -w -X main.compileDate=${COMPILE_DATE}" \
-            -o dist/listprodids-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} listprodids.go
+            -o dist/getrpm-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} ${{ env.SRC_GETRPM }}
+
+          # Build listprodids using source variable
+          go build -ldflags "-s -w -X main.compileDate=${COMPILE_DATE}" \
+            -o dist/listprodids-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }} ${{ env.SRC_LISTPRODIDS }}
 
       - name: Compress with UPX
       # UPX packing for size reduction, with error handling to continue even if UPX fails (e.g., due to unsupported formats)
@@ -77,11 +88,15 @@ jobs:
       - name: Create ZIP Package
         run: |
           cd dist
-          zip ../getrpm-${{ matrix.goos }}-${{ matrix.goarch }}.zip *
+          #zip ../getrpm-${{ matrix.goos }}-${{ matrix.goarch }}.zip *
+          # Use ZIP variable for the output file
+          zip ../${{ env.ZIP_FILENAME }} *
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: getrpm-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          #files: getrpm-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          # Use ZIP variable for the upload path
+          files: ${{ env.ZIP_FILENAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
