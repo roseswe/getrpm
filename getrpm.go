@@ -11,8 +11,8 @@ package main
 
 // For more comprehensive API interactions, SUSE Manager provides a well-documented API that allows for extensive automation of various tasks, including package management and system configuration. The SUSE Manager API documentation is available at: SUSE Manager API Version 27: ([documentation.suse.com](https://documentation.suse.com/suma/5.0/api/suse-manager/index.html))
 
-// (c) by ROSE SWE, Ralph Roth
-// @(#) $Id: getrpm.go,v 1.27 2026/04/06 09:51:48 ralph Exp $
+// (c) by ROSE SWE, Ralph Roth -- https://github.com/roseswe/getrpm
+// @(#) $Id: getrpm.go,v 1.28 2026/04/21 12:03:01 ralph Exp $
 
 import (
 	"encoding/json"
@@ -251,6 +251,8 @@ type tStructAPIResponse struct {
 func fUsage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
 	fmt.Println("Search for a RPM package using the SUSE SCC Public API. (c) by ROSE SWE, Ralph Roth")
+	fmt.Println("https://github.com/roseswe/getrpm")
+
 	fmt.Println("\n-=| Options:")
 	fmt.Println("  -?, -h, --help       Show this help message")
 
@@ -473,7 +475,7 @@ func main() {
 			compileDate = "unknown"
 		}
 		// [%s.%s, %s.%s, %s (DD.MMY.YYYY)]\n", runtime.GOOS, runtime.GOARCH, runtime.Compiler, runtime.Version(), compileDate)
-		fmt.Printf("\ngetrpm version [%s.%s,%s.%s,%s (DD.MMY.YYYY)]\n@(#) $Id: getrpm.go,v 1.27 2026/04/06 09:51:48 ralph Exp $\n", runtime.GOOS, runtime.GOARCH, runtime.Compiler, runtime.Version(), compileDate)
+		fmt.Printf("\ngetrpm version [%s.%s,%s.%s,%s (DD.MMY.YYYY)]\n@(#) $Id: getrpm.go,v 1.28 2026/04/21 12:03:01 ralph Exp $\n", runtime.GOOS, runtime.GOARCH, runtime.Compiler, runtime.Version(), compileDate)
 		os.Exit(0)
 	}
 

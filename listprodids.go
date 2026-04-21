@@ -5,7 +5,7 @@ package main
 // The output is a list of product IDs and their names.   -->   rmt-cli products list --all
 // The output can be used as input for the getrpm.go tool.
 // The output can be formatted in one line or in a table.
-// (c) by ROSE SWE, Ralph Roth
+// (c) by ROSE SWE, Ralph Roth -- https://github.com/roseswe/getrpm
 
 /* TODO:
 
@@ -71,7 +71,8 @@ func main() {
 	flag.Parse()
 
 	if lBooHelp {
-		fmt.Println("Usage: ListProdIDs [options]")
+		fmt.Println("(c) by ROSE SWE, Ralph Roth -- https://github.com/roseswe/getrpm")
+		fmt.Println("\nUsage: ListProdIDs [options]")
 		fmt.Println("Fetch and displays SUSE product IDs from the SCC API (to be used with getrpm).")
 		fmt.Println("\n== Options:")
 		fmt.Println("  -?, -h, --help   Show this help message")
@@ -85,7 +86,7 @@ func main() {
 
 	if lBooVersion {
 		// go build -ldflags "-X main.compileDate=$(date +%d.%m.%Y)" -o listprodids listprodids.go
-		fmt.Printf("\nListProdIDs version [%s,%s]: @(#) $Id: listprodids.go,v 1.16 2026/04/06 11:12:47 ralph Exp $\n", runtime.GOOS, runtime.Version())
+		fmt.Printf("\nListProdIDs version [%s,%s]: @(#) $Id: listprodids.go,v 1.17 2026/04/21 12:03:01 ralph Exp $\n", runtime.GOOS, runtime.Version())
 		os.Exit(0)
 	}
 

@@ -44,6 +44,7 @@ go build -o listprodids listprodids.go
 ```
 Currently no makefile provided...
 
+Hosted at [getrpm@github](https://github.com/roseswe/getrpm)
 ---
 
 ## 📖 Usage Examples
@@ -111,5 +112,5 @@ These tools use the public-facing SUSE SCC API. While highly useful, detailed do
 
 <!--
 vim:set fileencoding=utf8 fileformat=unix filetype=gfm tabstop=2 expandtab:
-@(#)  $Id: README.md,v 1.3 2026/04/06 11:12:47 ralph Exp $
+@(#)  $Id: README.md,v 1.4 2026/04/21 12:03:01 ralph Exp $
 -->
