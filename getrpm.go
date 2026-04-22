@@ -12,7 +12,7 @@ package main
 // For more comprehensive API interactions, SUSE Manager provides a well-documented API that allows for extensive automation of various tasks, including package management and system configuration. The SUSE Manager API documentation is available at: SUSE Manager API Version 27: ([documentation.suse.com](https://documentation.suse.com/suma/5.0/api/suse-manager/index.html))
 
 // (c) by ROSE SWE, Ralph Roth -- https://github.com/roseswe/getrpm
-// @(#) $Id: getrpm.go,v 1.28 2026/04/21 12:03:01 ralph Exp $
+// @(#) $Id: getrpm.go,v 1.29 2026/04/22 07:28:50 ralph Exp $
 
 import (
 	"encoding/json"
@@ -229,7 +229,9 @@ var cMapProductIDs = map[int]string{
 	3232: "SUSE Linux Enterprise Server 16.1 aarch64",
 }
 
-var compileDate string
+var compileDate string // set at compile time with -> go build -ldflags "-X main.compileDate=$(date +%d.%m.%Y)"
+
+// ####################################################################################
 
 type tStructProduct struct {
 	Identifier string `json:"identifier"`
@@ -248,6 +250,8 @@ type tStructAPIResponse struct {
 	Data []tStructPackage `json:"data"`
 }
 
+// ####################################################################################
+
 func fUsage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
 	fmt.Println("Search for a RPM package using the SUSE SCC Public API. (c) by ROSE SWE, Ralph Roth")
@@ -263,6 +267,7 @@ func fUsage() {
 	fmt.Println("  -l, --list           List available product IDs for option -p")
 	fmt.Println("  -f, --fuzzy          Enable fuzzy output (ignore exact name match)")
 	fmt.Println("\n-=| Exit Codes:")
+	fmt.Println("   0 - Success. Anything else should be an error.")
 	fmt.Println("  64 - Invalid or missing parameter")
 	fmt.Println("  65 - API request failed")
 	fmt.Println("  66 - Response decoding failed")
@@ -272,6 +277,8 @@ func fUsage() {
 	fmt.Println("  ./getrpm --list")
 	os.Exit(cIntErrUsage)
 }
+
+// ####################################################################################
 
 func fGetPackages(pStrRPM string, pStrProduct string, pBooVerbose bool) ([]tStructPackage, error) {
 	lStrURL := cStrAPIURL + pStrProduct + "&query=" + pStrRPM
@@ -316,7 +323,7 @@ func fGetPackages(pStrRPM string, pStrProduct string, pBooVerbose bool) ([]tStru
 	var lStructResp tStructAPIResponse
 	lErr = json.Unmarshal(lBytBody, &lStructResp) // the big magic happens here
 	if lErr != nil {
-		return nil, fmt.Errorf("failed to decode API response: %w", lErr)
+		return nil, fmt.Errorf("failed to decode API response (unmarshal): %w", lErr)
 	}
 
 	for i, pkg := range lStructResp.Data {
@@ -331,6 +338,8 @@ func fGetPackages(pStrRPM string, pStrProduct string, pBooVerbose bool) ([]tStru
 
 	return lStructResp.Data, nil
 }
+
+// ####################################################################################
 
 // parseVersionFloat extracts digit and dot characters from a version string
 // and attempts to parse them as a float64 for numeric comparison.
@@ -351,6 +360,8 @@ func parseVersionFloat(s string) float64 {
 	}
 	return f
 }
+
+// ####################################################################################
 
 func fPrintTable(pArrPackages []tStructPackage, rpmName string, productID string, fuzzy bool) {
 	// sort packages by name (case-insensitive), then numeric version, then release
@@ -388,6 +399,7 @@ func fPrintTable(pArrPackages []tStructPackage, rpmName string, productID string
 	maxReleaseLength := len("Release") + 2
 	maxRepoLength := len("Repository") + 2
 
+	// get length of longest name, version, arch, release, repo for table formatting
 	for _, pkg := range pArrPackages {
 		if fuzzy || strings.EqualFold(pkg.Name, rpmName) {
 			if len(pkg.Name) > maxNameLength {
@@ -424,6 +436,8 @@ func fPrintTable(pArrPackages []tStructPackage, rpmName string, productID string
 	fmt.Println("Total packages found:", lLines)
 }
 
+// ####################################################################################
+
 func fListProductIDs() {
 	keys := make([]int, 0, len(cMapProductIDs))
 	for k := range cMapProductIDs {
@@ -455,6 +469,7 @@ func main() {
 	var fuzzy bool
 	var version bool
 
+	// define command line flags, parsing is done in the main function for better error handling and usage message
 	flag.StringVar(&rpmName, "r", "glibc", "Specify the RPM package name (default: glibc)")
 	flag.StringVar(&rpmName, "rpm", "glibc", "Specify the RPM package name (default: glibc)")
 	flag.StringVar(&productID, "p", "2795", "Specify the product ID (default: 2795)")
@@ -475,7 +490,7 @@ func main() {
 			compileDate = "unknown"
 		}
 		// [%s.%s, %s.%s, %s (DD.MMY.YYYY)]\n", runtime.GOOS, runtime.GOARCH, runtime.Compiler, runtime.Version(), compileDate)
-		fmt.Printf("\ngetrpm version [%s.%s,%s.%s,%s (DD.MMY.YYYY)]\n@(#) $Id: getrpm.go,v 1.28 2026/04/21 12:03:01 ralph Exp $\n", runtime.GOOS, runtime.GOARCH, runtime.Compiler, runtime.Version(), compileDate)
+		fmt.Printf("\ngetrpm version [%s.%s,%s.%s/%s (DD.MMY.YYYY)]\n@(#) $Id: getrpm.go,v 1.29 2026/04/22 07:28:50 ralph Exp $\n", runtime.GOOS, runtime.GOARCH, runtime.Compiler, runtime.Version(), compileDate)
 		os.Exit(0)
 	}
 
@@ -496,4 +511,7 @@ func main() {
 	}
 
 	fPrintTable(packages, rpmName, productID, fuzzy)
-}
+} // Main
+
+// ####################################################################################
+// End of file

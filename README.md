@@ -25,8 +25,8 @@ A helper utility that fetches the live list of all available SUSE products and t
 ## 🚀 Use Cases
 
 * **Version Verification:** Quickly check if a specific security patch or version of `glibc`, `kernel`, or `openssl` is available for a specific SUSE distribution.
-* **Repository Discovery:** Find the exact `identifier` (e.g., `sle-module-basesystem/15.6/x86_64`) needed for automation or RMT (Repository Mirroring Tool) configuration.
-* **System Agnostic Checks:** Perform lookups from any machine (macOS, Windows, or non-SUSE Linux) without needing `zypper` or a registered subscription.
+* **Repository Discovery:** Find the exact `identifier` (e.g., `sle-module-basesystem/15.6/x86_64`) needed for automation, SUSEConnect or RMT (Repository Mirroring Tool) configuration.
+* **System Agnostic Checks:** Main driver: Perform lookups from any machine (macOS, Windows, or non-SUSE Linux) without needing `zypper` or a registered subscription.
 * **CI/CD Integration:** Use the structured output and exit codes to validate package availability before triggering build pipelines.
 
 ---
@@ -42,9 +42,10 @@ go build -o getrpm getrpm.go
 # Build listprodids
 go build -o listprodids listprodids.go
 ```
-Currently no makefile provided...
+Currently no makefile provided... we use the GitHub action workflow (on pushing release tags) to build binaries.
 
 Hosted at [getrpm@github](https://github.com/roseswe/getrpm)
+
 ---
 
 ## 📖 Usage Examples
@@ -98,7 +99,7 @@ To get a condensed list for script processing:
 
 ## 🚦 Exit Codes (`getrpm`)
 The tool returns specific exit codes for easier automation:
-* **0**: Success.
+* **0**: Success. Anything else should be an error.
 * **64**: Invalid or missing parameters.
 * **65**: API request failed (network or 404).
 * **66**: Decoding failed (invalid JSON or no packages found).
@@ -112,5 +113,5 @@ These tools use the public-facing SUSE SCC API. While highly useful, detailed do
 
 <!--
 vim:set fileencoding=utf8 fileformat=unix filetype=gfm tabstop=2 expandtab:
-@(#)  $Id: README.md,v 1.4 2026/04/21 12:03:01 ralph Exp $
+@(#)  $Id: README.md,v 1.6 2026/04/22 07:28:50 ralph Exp $
 -->

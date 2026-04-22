@@ -54,6 +54,8 @@ type tStructAPIResponse struct {
 	Data []tStructProduct `json:"data"`
 }
 
+var compileDate string // set at compile time with -> go build -ldflags "-X main.compileDate=$(date +%d.%m.%Y)"
+
 func main() {
 	var lBooHelp bool
 	var lBooVersion bool
@@ -85,8 +87,12 @@ func main() {
 	}
 
 	if lBooVersion {
+		if compileDate == "" {
+			compileDate = "unknown"
+		}
 		// go build -ldflags "-X main.compileDate=$(date +%d.%m.%Y)" -o listprodids listprodids.go
-		fmt.Printf("\nListProdIDs version [%s,%s]: @(#) $Id: listprodids.go,v 1.17 2026/04/21 12:03:01 ralph Exp $\n", runtime.GOOS, runtime.Version())
+		fmt.Printf("\nListProdIDs version [%s.%s,%s.%s/%s (DD.MMY.YYYY)]\n@(#) $Id: listprodids.go,v 1.18 2026/04/22 07:28:50 ralph Exp $\n", runtime.GOOS, runtime.GOARCH, runtime.Compiler, runtime.Version(), compileDate)
+		// fmt.Printf("\nListProdIDs version [%s,%s]: @(#) $Id: listprodids.go,v 1.18 2026/04/22 07:28:50 ralph Exp $\n", runtime.GOOS, runtime.Version())
 		os.Exit(0)
 	}
 
